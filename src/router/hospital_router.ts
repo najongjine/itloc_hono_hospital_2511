@@ -10,7 +10,7 @@ interface ResultType {
 router.get("/", (c) => {
   let result: ResultType = { success: true };
   try {
-    const kakao_restapi_key = process.env;
+    const kakao_restapi_key = process.env.KAKAO_RESTAPI_KEY;
     console.log(`# kakao_restapi_key: `, kakao_restapi_key);
     result.data = "저는 병원 서버에요";
     return c.json(result);
