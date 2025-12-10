@@ -14,6 +14,12 @@ router.get("/", async (c) => {
 
     const params = new URLSearchParams();
     params.append("query", "맛집");
+    params.append("x", "");
+    params.append("y", "");
+
+    params.append("category_group_code", "HP8");
+    params.append("radius", "2000");
+    params.append("sort", "distance");
     const response = await fetch(
       `https://dapi.kakao.com/v2/local/search/keyword?${params}`,
       {
