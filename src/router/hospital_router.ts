@@ -7,12 +7,26 @@ interface ResultType {
   data?: any;
   msg?: string;
 }
-router.get("/", (c) => {
+router.get("/", async (c) => {
   let result: ResultType = { success: true };
   try {
     const kakao_restapi_key = process.env.KAKAO_RESTAPI_KEY;
-    console.log(`# kakao_restapi_key: `, kakao_restapi_key);
-    result.data = "저는 병원 서버에요";
+
+    const params = new URLSearchParams();
+    params.append("query", "맛집");
+    const response = await fetch(
+      `https://dapi.kakao.com/v2/local/search/keyword?${params}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `KakaoAK ${kakao_restapi_key}`,
+        },
+      }
+    );
+
+    const result = await response.json();
+
+    result.data = result;
     return c.json(result);
   } catch (error: any) {
     result.success = false;
