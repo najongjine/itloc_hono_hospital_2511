@@ -7,7 +7,7 @@ interface ResultType {
   data?: any;
   msg?: string;
 }
-router.get("/", async (c) => {
+router.get("/query_string", async (c) => {
   let result: ResultType = { success: true };
   try {
     return c.json(result);
