@@ -11,6 +11,7 @@ router.get("/query_string", async (c) => {
   let result: ResultType = { success: true };
   try {
     let query = String(c?.req?.query("query") ?? "데이터 안보냄");
+
     query = query?.trim() ?? "";
     result.data = `클라이언트가 보낸 q 라는 데이터: ${query}`;
     return c.json(result);
