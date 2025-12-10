@@ -2,12 +2,13 @@
   "name": "itloc_hono_hospital_2511",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "cross-env NODE_ENV=development tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.6",
+    "cross-env": "^10.1.0",
     "hono": "^4.10.7"
   },
   "devDependencies": {
