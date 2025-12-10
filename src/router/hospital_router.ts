@@ -13,9 +13,9 @@ router.get("/", async (c) => {
     const kakao_restapi_key = process.env.KAKAO_RESTAPI_KEY;
 
     const params = new URLSearchParams();
-    params.append("query", "맛집");
-    params.append("x", "");
-    params.append("y", "");
+    params.append("query", "맛집"); // 사용자 검색어
+    params.append("x", ""); // longitute
+    params.append("y", ""); // langitute
 
     params.append("category_group_code", "HP8");
     params.append("radius", "2000");
