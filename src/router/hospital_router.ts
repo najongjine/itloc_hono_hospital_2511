@@ -24,9 +24,8 @@ router.get("/", async (c) => {
       }
     );
 
-    const result = await response.json();
-
-    result.data = result;
+    let _data = await response.json();
+    result.data = _data;
     return c.json(result);
   } catch (error: any) {
     result.success = false;
