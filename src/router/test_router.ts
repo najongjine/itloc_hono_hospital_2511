@@ -105,4 +105,22 @@ router.post("/formdata_body", async (c) => {
   }
 });
 
+router.post("/json_body", async (c) => {
+  let result: ResultType = { success: true };
+  try {
+    const body = await c.req.json();
+    let sample1 = body?.sample1;
+    let sample2 = body?.sample2;
+    result.data = {
+      sample1: sample1,
+      sample2: sample2,
+    };
+    return c.json(result);
+  } catch (error: any) {
+    result.success = false;
+    result.msg = `!server error. ${error?.message ?? ""}`;
+    return c.json(result);
+  }
+});
+
 export default router;
