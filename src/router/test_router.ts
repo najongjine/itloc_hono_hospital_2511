@@ -50,4 +50,21 @@ router.get("/header", async (c) => {
   }
 });
 
+/** 큰 데이터 받는 방법. 이거를 제일 많이 씀 */
+router.post("/formdata_body", async (c) => {
+  let result: ResultType = { success: true };
+  try {
+    const body = await c.req.parseBody({ all: true });
+
+    const files = body["files[]"];
+    const strdata1 = body["strdata1"];
+    result.data = { files: files, strdata1: strdata1 };
+    return c.json(result);
+  } catch (error: any) {
+    result.success = false;
+    result.msg = `!server error. ${error?.message ?? ""}`;
+    return c.json(result);
+  }
+});
+
 export default router;
