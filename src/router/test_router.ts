@@ -22,4 +22,18 @@ router.get("/query_string", async (c) => {
   }
 });
 
+router.get("/query_string_array", async (c) => {
+  let result: ResultType = { success: true };
+  try {
+    const tags = c.req.queries("tags");
+
+    result.data = tags;
+    return c.json(result);
+  } catch (error: any) {
+    result.success = false;
+    result.msg = `!server error. ${error?.message ?? ""}`;
+    return c.json(result);
+  }
+});
+
 export default router;
