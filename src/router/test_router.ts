@@ -36,4 +36,18 @@ router.get("/query_string_array", async (c) => {
   }
 });
 
+router.get("/header", async (c) => {
+  let result: ResultType = { success: true };
+  try {
+    const custom_header = c.req.header("custom_header");
+
+    result.data = custom_header;
+    return c.json(result);
+  } catch (error: any) {
+    result.success = false;
+    result.msg = `!server error. ${error?.message ?? ""}`;
+    return c.json(result);
+  }
+});
+
 export default router;
