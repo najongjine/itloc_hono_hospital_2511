@@ -56,7 +56,7 @@ router.post("/formdata_body", async (c) => {
   try {
     const body = await c.req.parseBody({ all: true });
 
-    const files = body["files[]"];
+    const files = body["files"];
     const strdata1 = body["strdata1"];
     result.data = { files: files, strdata1: strdata1 };
     return c.json(result);
