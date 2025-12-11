@@ -69,7 +69,34 @@ router.post("/formdata_body", async (c) => {
       type: f.type, // 파일 타입 (MIME)
     }));
 
-    result.data = { strdata1: strdata1, fileInfos: fileInfos };
+    // 3. 각 파일을 Binary(Buffer)로 변환
+    // map 내에서 await를 써야 하므로 Promise.all 사용
+    const fileData = await Promise.all(
+      files.map(async (file: any) => {
+        // (핵심) Web Standard File -> ArrayBuffer -> Node.js Buffer 변환
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        // 이제 'buffer' 변수에는 실제 바이너리 데이터가 들어있습니다.
+        // (예: fs.writeFileSync('save.png', buffer) 등으로 저장 가능)
+
+        return {
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          // JSON으로 확인하기 위해 바이너리를 Base64 문자열로 살짝 보여줌
+          binaryPreview: buffer.toString("base64").substring(0, 50) + "...",
+          // 혹은 Hex 코드로 확인
+          hexPreview: buffer.toString("hex").substring(0, 20) + "...",
+        };
+      })
+    );
+
+    result.data = {
+      strdata1: strdata1,
+      fileInfos: fileInfos,
+      fileData: fileData,
+    };
     return c.json(result);
   } catch (error: any) {
     result.success = false;
