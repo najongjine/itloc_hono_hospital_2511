@@ -56,9 +56,20 @@ router.post("/formdata_body", async (c) => {
   try {
     const body = await c.req.parseBody({ all: true });
 
-    const files = body["files"];
+    let files = body["files"];
+
     const strdata1 = body["strdata1"];
-    result.data = { files: files, strdata1: strdata1 };
+
+    if (!Array.isArray(files)) {
+      files = [files];
+    }
+    const fileInfos = files.map((f: any) => ({
+      name: f.name, // 파일명
+      size: f.size, // 파일 크기
+      type: f.type, // 파일 타입 (MIME)
+    }));
+
+    result.data = { strdata1: strdata1, fileInfos: fileInfos };
     return c.json(result);
   } catch (error: any) {
     result.success = false;
