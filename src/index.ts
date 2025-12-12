@@ -1,6 +1,7 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import * as dotenv from "dotenv";
+import { cors } from "hono/cors"; // <-- 보안 해재
 
 const envFile =
   process.env.NODE_ENV === "production"
@@ -9,6 +10,7 @@ const envFile =
 dotenv.config({ path: envFile });
 
 const app = new Hono();
+app.use("*", cors()); // <-- 보안 해재
 /**
  * 서버설정
  * DB 설정
