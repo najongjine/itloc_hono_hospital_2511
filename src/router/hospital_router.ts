@@ -12,10 +12,17 @@ router.get("/", async (c) => {
   try {
     const kakao_restapi_key = process.env.KAKAO_RESTAPI_KEY;
 
+    let query = String(c?.req?.query("query") ?? "병원");
+    query = query?.trim() ?? "";
+    let x = String(c?.req?.query("x") ?? "0");
+    query = query?.trim() ?? "";
+    let y = String(c?.req?.query("y") ?? "0");
+    query = query?.trim() ?? "";
+
     const params = new URLSearchParams();
-    params.append("query", "맛집"); // 사용자 검색어
-    params.append("x", ""); // longitute
-    params.append("y", ""); // langitute
+    params.append("query", query); // 사용자 검색어
+    params.append("x", x); // longitute
+    params.append("y", y); // langitute
 
     params.append("category_group_code", "HP8");
     params.append("radius", "2000");
