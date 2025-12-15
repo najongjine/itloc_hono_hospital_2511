@@ -38,7 +38,7 @@ router.get("/", async (c) => {
     );
 
     let _data = await response.json();
-    result.data = _data;
+    result.data = _data?.documents ?? [];
     return c.json(result);
   } catch (error: any) {
     result.success = false;
