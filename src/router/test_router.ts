@@ -1,6 +1,7 @@
 import { Hono } from "hono";
+import { HonoEnv } from "../types/types.js";
 
-const router = new Hono();
+const router = new Hono<HonoEnv>();
 
 interface ResultType {
   success?: boolean;
@@ -117,6 +118,57 @@ router.post("/json_body", async (c) => {
     };
     return c.json(result);
   } catch (error: any) {
+    result.success = false;
+    result.msg = `!server error. ${error?.message ?? ""}`;
+    return c.json(result);
+  }
+});
+
+router.get("/db_select_test", async (c) => {
+  let result: ResultType = { success: true };
+  const db = c.var.db;
+  let id = Number(c?.req?.query("id") ?? 0);
+
+  try {
+    // ⭐️ SQL Injection 방지: $1 문법 사용
+    // 쌩쿼리지만 파라미터 바인딩을 통해 안전하게 처리됩니다.
+    let _data = await db.query(
+      "SELECT * FROM hospitals WHERE id = $1",
+      [id] // 배열 순서대로 $1에 매핑됨
+    );
+    let _data2 = _data?.rows;
+    result.data = _data2;
+    return c.json(result);
+  } catch (error: any) {
+    console.error(error);
+    result.success = false;
+    result.msg = `!server error. ${error?.message ?? ""}`;
+    return c.json(result);
+  }
+});
+
+router.post("/db_post_test", async (c) => {
+  let result: ResultType = { success: true };
+  const db = c.var.db;
+  let id = Number(c?.req?.query("id") ?? 0);
+  // body에서 데이터 파싱
+  const { name, email } = await c.req.json();
+
+  try {
+    // ⭐️ SQL Injection 방지: $1, $2, $3 사용
+    const query = `
+      UPDATE users 
+      SET name = $1, email = $2, updated_at = NOW() 
+      WHERE id = $3
+      RETURNING *
+    `;
+
+    const _data = await db.query(query, [name, email, id]);
+
+    result.data = _data;
+    return c.json(result);
+  } catch (error: any) {
+    console.error(error);
     result.success = false;
     result.msg = `!server error. ${error?.message ?? ""}`;
     return c.json(result);
