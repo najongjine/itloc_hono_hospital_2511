@@ -7,6 +7,8 @@ npm i cross-env
 
 npm i dotenv
 
+npm i rimraf tsx
+
 package.json
 -scripts.dev 를
 
