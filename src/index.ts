@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import * as dotenv from "dotenv";
 import { cors } from "hono/cors"; // <-- 보안 해재
 import { dbMiddleware } from "./db/db.js"; // DB
+import { handle } from "hono/vercel"; // Vercel 전용
 
 const envFile =
   process.env.NODE_ENV === "production"
@@ -29,6 +30,11 @@ import { HonoEnv } from "./types/types.js";
 app.route("/api/hospital", hospitalRouter);
 app.route("/api/test", testRouter);
 /** router 설정 END */
+
+/** vercel 전용 */
+export const GET = handle(app);
+export const POST = handle(app);
+/** vercel 전용 END */
 
 serve(
   {
