@@ -69,7 +69,7 @@ router.get("/", async (c) => {
         congestion_level: dbItem ? dbItem.congestion_level : 2,
       };
     });
-    result.data = _data2;
+    result.data = _data;
     return c.json(result);
   } catch (error: any) {
     result.success = false;
