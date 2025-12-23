@@ -74,8 +74,7 @@ router.get("/", async (c) => {
     // [추가됨] Python AI 서버로 데이터 전송 및 예측값 수신
     // ---------------------------------------------------------
     try {
-      const pythonUrl =
-        "https://wildojisan-itloc2511-hf-python.hf.space/hospital/predict";
+      const pythonUrl = `${process.env.AI_SERVER}/hospital/predict`;
 
       const pythonResponse = await fetch(pythonUrl, {
         method: "POST",
