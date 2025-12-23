@@ -75,7 +75,7 @@ router.get("/", async (c) => {
     // ---------------------------------------------------------
     try {
       const pythonUrl = `${process.env.AI_SERVER}/hospital/predict`;
-
+      console.log(`pythonURL: `, pythonUrl);
       const pythonResponse = await fetch(pythonUrl, {
         method: "POST",
         headers: {
