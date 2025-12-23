@@ -89,7 +89,6 @@ router.get("/", async (c) => {
       if (pythonResponse.ok) {
         const responseJson = await pythonResponse.json();
 
-        // [수정 2] Python 서버의 CustomResponse 구조(success, data, msg)를 처리합니다.
         if (
           responseJson.success &&
           responseJson.data &&
@@ -142,7 +141,7 @@ router.get("/", async (c) => {
       }`;
       return c.json(result);
     }
-    // ---------------------------------------------------------
+    // ----------Python AI 서버로 데이터 전송 및 예측값 수신 END------------------
     result.data = _data;
     return c.json(result);
   } catch (error: any) {
