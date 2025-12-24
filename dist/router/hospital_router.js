@@ -49,7 +49,8 @@ router.get("/", async (c) => {
         // [추가됨] Python AI 서버로 데이터 전송 및 예측값 수신
         // ---------------------------------------------------------
         try {
-            const pythonUrl = `${process.env.AI_SERVER}/hospital/predict`;
+            //const pythonUrl = `${process.env.AI_SERVER}/hospital/predict`;
+            const pythonUrl = `https://itloc-hono-hospital-2511.vercel.app/hospital/predict`;
             console.log(`pythonURL: `, pythonUrl);
             const pythonResponse = await fetch(pythonUrl, {
                 method: "POST",
