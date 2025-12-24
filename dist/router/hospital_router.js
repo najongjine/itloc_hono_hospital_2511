@@ -3,6 +3,7 @@ const router = new Hono();
 router.get("/", async (c) => {
     let result = { success: true };
     try {
+        const db = c.var.db;
         const kakao_restapi_key = process.env.KAKAO_RESTAPI_KEY;
         let query = String(c?.req?.query("query") ?? "병원");
         query = query?.trim() ?? "";
@@ -24,8 +25,85 @@ router.get("/", async (c) => {
             },
         });
         let _data = await response.json();
+        _data = _data?.documents ?? [];
         console.log(`_data: `, _data);
-        result.data = _data?.documents ?? [];
+        const ids = _data.map((item) => item.id);
+        let _data2 = await db.query("SELECT * FROM hospitals WHERE id = ANY($1)", [ids] // 배열 전체를 하나의 파라미터($1)로 전달
+        );
+        _data2 = _data2?.rows ?? [];
+        const hospitalMap = new Map(_data2.map((item) => [item.id, item]));
+        // 2. _data를 순회하며 데이터 병합 및 가공
+        _data = _data.map((item) => {
+            // 매칭되는 DB 데이터 찾기
+            const dbItem = hospitalMap.get(item?.id);
+            return {
+                ...item, // 기존 _data의 필드 유지
+                // 요청 1: distance 복사해서 distance_m 만들기
+                distance_m: item.distance,
+                // 요청 2: 매칭 데이터가 있으면 그 값을, 없으면 기본값(3, 2) 사용
+                rating: dbItem ? dbItem?.rating : 3,
+                congestion_level: dbItem ? dbItem.congestion_level : 2,
+            };
+        });
+        // ---------------------------------------------------------
+        // [추가됨] Python AI 서버로 데이터 전송 및 예측값 수신
+        // ---------------------------------------------------------
+        try {
+            const pythonUrl = `${process.env.AI_SERVER}/hospital/predict`;
+            console.log(`pythonURL: `, pythonUrl);
+            const pythonResponse = await fetch(pythonUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                // [수정 1] Python 코드에서 request_data.hospitals로 데이터를 꺼내므로,
+                // 배열(_data)을 "hospitals"라는 키를 가진 객체로 감싸서 보냅니다.
+                body: JSON.stringify(_data),
+            });
+            if (pythonResponse.ok) {
+                const responseJson = await pythonResponse.json();
+                if (responseJson.success &&
+                    responseJson.data &&
+                    Array.isArray(responseJson.data)) {
+                    const predictedResults = responseJson.data;
+                    console.log(`predictedResults: `, predictedResults);
+                    // 검색 속도를 높이기 위해 ID를 키로 하는 Map 생성
+                    const scoreMap = new Map(predictedResults.map((p) => [String(p.id), p]));
+                    // 3. [핵심 수정] 원본 _data를 유지하면서 점수만 추가(Merge)합니다.
+                    _data = _data.map((originItem) => {
+                        const predictedItem = scoreMap.get(String(originItem.id));
+                        return {
+                            ...originItem, // 병원 이름, 주소 등 카카오 정보 유지!
+                            predicted_recommendation_score: predictedItem
+                                ? predictedItem?.predicted_recommendation_score
+                                : 0,
+                        };
+                    });
+                    // (선택 사항) 만약 1등 병원 정보가 따로 필요하다면 여기서 responseJson.data.most_recommended 를 활용하세요.
+                }
+                else {
+                    console.error("Python AI Logic Error:", responseJson?.msg);
+                    // 예측 실패 시, _data는 위에서 만든(카카오+DB) 원본 상태를 유지합니다.
+                    result.success = false;
+                    result.msg = `!Python AI Logic Error: ${responseJson?.msg}`;
+                    return c.json(result);
+                }
+            }
+            else {
+                console.error("!Python Server Network Error:", pythonResponse.statusText);
+                result.success = false;
+                result.msg = `!Python Server Network Error: ${pythonResponse.statusText}`;
+                return c.json(result);
+            }
+        }
+        catch (pyError) {
+            console.error("!Failed to fetch from Python server:", pyError?.message ?? "");
+            result.success = false;
+            result.msg = `!Failed to fetch from Python server: ${pyError?.message ?? ""}`;
+            return c.json(result);
+        }
+        // ----------Python AI 서버로 데이터 전송 및 예측값 수신 END------------------
+        result.data = _data;
         return c.json(result);
     }
     catch (error) {

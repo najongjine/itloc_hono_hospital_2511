@@ -41,6 +41,7 @@ router.get("/", async (c) => {
 
     let _data: any = await response.json();
     _data = _data?.documents ?? [];
+    console.log(`_data: `, _data);
     const ids: string[] = _data.map((item: any) => item.id);
 
     let _data2: any = await db.query(
