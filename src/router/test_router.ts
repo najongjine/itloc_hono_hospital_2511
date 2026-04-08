@@ -90,7 +90,7 @@ router.post("/formdata_body", async (c) => {
           // 혹은 Hex 코드로 확인
           hexPreview: buffer.toString("hex").substring(0, 20) + "...",
         };
-      })
+      }),
     );
 
     result.data = {
@@ -134,7 +134,7 @@ router.get("/db_select_test", async (c) => {
     // 쌩쿼리지만 파라미터 바인딩을 통해 안전하게 처리됩니다.
     let _data = await db.query(
       "SELECT * FROM hospitals WHERE id = $1",
-      [id] // 배열 순서대로 $1에 매핑됨
+      [id], // 배열 순서대로 $1에 매핑됨
     );
     let _data2 = _data?.rows;
     result.data = _data2;
@@ -175,4 +175,55 @@ router.post("/db_post_test", async (c) => {
   }
 });
 
+router.get("/naver_local", async (c) => {
+  let result: ResultType = { success: true };
+  try {
+    let query = String(c?.req?.query("query") ?? "강남역");
+    query = query?.trim() ?? "";
+    const clientId =
+      process.env.NAVER_GEO_CLIENT_ID ||
+      process.env.EXPO_PUBLIC_NAVER_GEO_Client_ID;
+    const clientSecret =
+      process.env.NAVER_GEO_CLIENT_SECRET ||
+      process.env.EXPO_PUBLIC_NAVER_GEO_Client_Secret;
+
+    if (!clientId || !clientSecret) {
+      result.success = false;
+      result.msg = "Naver API key is missing in .env";
+      return c.json(result);
+    }
+
+    const url = `https://openapi.naver.com/v1/search/local.json?query=${encodeURIComponent(
+      query,
+    )}`;
+
+    const response = await fetch(url, {
+      headers: {
+        "X-Naver-Client-Id": clientId,
+        "X-Naver-Client-Secret": clientSecret,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      result.success = false;
+      result.msg = `Request failed: ${response.status}`;
+      result.data = data;
+      return c.json(result);
+    }
+
+    result.data = {
+      query,
+      count: Array.isArray(data.items) ? data.items.length : 0,
+      data,
+    };
+    return c.json(result);
+  } catch (error: any) {
+    console.error("Naver local API error:", error);
+    result.success = false;
+    result.msg = `!server error. ${error?.message ?? ""}`;
+    return c.json(result);
+  }
+});
 export default router;
